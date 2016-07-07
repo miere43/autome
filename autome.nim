@@ -16,12 +16,16 @@ include private.mouse
 include private.keyboard
 
 when isMainModule:
-  echo repr findWindow("Windows Powershell")
+  #echo repr findWindow("Windows Powershell")
+  #mouse.click(0, 0)
   #mouse
     #.move(600, 200)
-  echo mouse.pos
+  #echo mouse.pos
   # var p: POINT
   # discard getCursorPos(p.addr)
   # echo setCursorPos(800, 600)
   # discard getCursorPos(p.addr)
   # echo $p
+  when defined(test):
+    import private.imports
+    assert sizeof(MOUSEINPUT) == 28
