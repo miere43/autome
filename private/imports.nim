@@ -40,8 +40,11 @@ proc newWinString*(str: string): WinString =
   else:
     result = cstring(str)
 
-#proc allocMarshalArray[T](numEntries: int): MarshalArray =
-#  result = cast[MarshalArray](alloc())
+# proc allocMarshalArray[T]*(numEntries: int): MarshalArray =
+#   cast[MarshalArray](alloc(numEntries * sizeof(T)))
+
+# proc deallocMarshalArray*(arr: MarshalArray) =
+#   dealloc(cast[pointer](arr))
 
 ## Retrieves the position of the mouse cursor, in screen coordinates.
 proc getCursorPos*(lpPoint: ptr POINT): WINBOOL 
@@ -58,6 +61,10 @@ proc sendInput*(nInputs: uint, pInputs: pointer, cbSize: int): uint
 
 proc getMessageExtraInfo*(): pointer
   {.stdcall, dynlib: "user32", importc: "GetMessageExtraInfo".}
+
+# https://msdn.microsoft.com/en-us/library/windows/desktop/ms633539(v=vs.85).aspx
+proc setForegroundWindow*(hWnd: Handle): WINBOOL
+  {.stdcall, dynlib: "user32", importc: "SetForegroundWindow".}
 
 when useWinUnicode:
   proc findWindow*(lpClassName, lpWindowName: WinString): Handle

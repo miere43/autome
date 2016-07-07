@@ -16,7 +16,12 @@ include private.mouse
 include private.keyboard
 
 when isMainModule:
-  #echo repr findWindow("Windows Powershell")
+  wait(1000)
+  mouse.emit(mLeft, msDown, msDown, msDown, msUp)
+  # var g = findWindow("Notepad")
+  # echo repr g
+  # echo setForegroundWindow(g.handle)
+  #mouse.doubleclick()
   #mouse.click(0, 0)
   #mouse
     #.move(600, 200)
