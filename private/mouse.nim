@@ -50,6 +50,10 @@ proc click*(m: MouseCtx, button: MouseButton, x, y: int32): MouseCtx
 proc click*(m: MouseCtx, x, y: int32): MouseCtx {.inline, discardable.} =
   result = click(m, mLeft, x, y)
 
+proc click*(m: MouseCtx): MouseCtx {.inline, discardable.} =
+  var (x, y) = m.pos()
+  result = click(m, mLeft, x, y)
+
 proc doubleclick*(m: MouseCtx): MouseCtx {.inline, discardable.} =
   ## emulates double mouse press and one release event.
   var (x, y) = m.pos()
@@ -66,8 +70,7 @@ proc doubleclick*(m: MouseCtx): MouseCtx {.inline, discardable.} =
 
 proc emit*(m: MouseCtx, button: MouseButton,
     events: varargs[MouseState]): MouseCtx {.discardable.} =
-  # emit mouse press/release events at current mouse position.
-  echo "varargs len: ", events.len
+  # emit mouse press/release events at current mouse position. Max 100 events.
   var (x, y) = m.pos()
   var inputsLen = len(events)
   var inputs = cast[array[0..100, MOUSEINPUT]]
@@ -77,13 +80,20 @@ proc emit*(m: MouseCtx, button: MouseButton,
     inputs[i] = initMouseInput(x, y,
       MOUSEEVENTF_ABSOLUTE or mouseButtonToFlags(button, event)) 
     inc(i)
-  let res = sendInput(inputsLen.uint, inputs[0].addr, sizeof(MOUSEINPUT))
+  let res = sendInput(inputsLen.uint, inputs.addr, sizeof(MOUSEINPUT))
   dealloc(inputs.addr)
   assert res == inputsLen.uint
   m
 
 proc move*(m: MouseCtx, x, y: int): MouseCtx {.discardable.} =
   discard setCursorPos(x, y)
+  m
+
+proc movedelta*(m: MouseCtx, dx, dy: int): MouseCtx {.discardable.} =
+  var inputs: array[1, MOUSEINPUT]
+  inputs[0] = initMouseInput(dx.DWORD, dy.DWORD, mouseButtonToDownFlags(mLeft))
+  let res = sendInput(len(inputs).uint, inputs[0].addr, sizeof(MOUSEINPUT))
+  assert res == len(inputs).uint
   m
 
 proc x*(m: MouseCtx): int {.inline.} =
@@ -110,7 +120,7 @@ proc `x=`*(m: MouseCtx, pos: int) {.inline, sideEffect.} =
 proc `y=`*(m: MouseCtx, pos: int) {.inline, sideEffect.} =
   m.y(pos)
 
-proc wait(m: MouseCtx, ms: int): MouseCtx {.inline, sideEffect.} =
+proc wait*(m: MouseCtx, ms: int): MouseCtx {.inline, sideEffect, discardable.} =
   ## stops execution for `ms` milliseconds.
   wait(ms)
   m

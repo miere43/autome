@@ -12,9 +12,16 @@ type
     dwFlags*: DWORD
     time*: DWORD
     dwExtraInfo*: pointer
-  MarshalArray = array[0..100_000, byte]
+  KEYBDINPUT* {.pure, final.} = object
+    kind*: DWORD
+    wVk*: int16
+    wScan*: int16
+    dwFlags*: DWORD
+    time*: DWORD
+    dwExtraInfo*: pointer
 
 const
+  inputStructSize* = 28
   INPUT_MOUSE* = 0
   INPUT_KEYBOARD* = 1
   INPUT_HARDWARE* = 2
@@ -25,6 +32,10 @@ const
   MOUSEEVENTF_RIGHTUP* = 0x0010
   MOUSEEVENTF_MIDDLEDOWN* = 0x0020
   MOUSEEVENTF_MIDDLEUP* = 0x0040
+  VK_DELETE* = 0x2E.int16
+  VK_BACK* = 0x08.int16
+  KEYEVENTF_KEYUP* = 0x0002
+  KEYEVENTF_UNICODE* = 0x0004
 
 when useWinUnicode:
   type WinString* = WideCString
@@ -39,12 +50,6 @@ proc newWinString*(str: string): WinString =
       result = newWideCString(str)
   else:
     result = cstring(str)
-
-# proc allocMarshalArray[T]*(numEntries: int): MarshalArray =
-#   cast[MarshalArray](alloc(numEntries * sizeof(T)))
-
-# proc deallocMarshalArray*(arr: MarshalArray) =
-#   dealloc(cast[pointer](arr))
 
 ## Retrieves the position of the mouse cursor, in screen coordinates.
 proc getCursorPos*(lpPoint: ptr POINT): WINBOOL 
@@ -66,6 +71,12 @@ proc getMessageExtraInfo*(): pointer
 proc setForegroundWindow*(hWnd: Handle): WINBOOL
   {.stdcall, dynlib: "user32", importc: "SetForegroundWindow".}
 
+proc mapVirtualKey*(uCode, uMapType: uint32): uint32
+  {.stdcall, dynlib: "user32", importc: "MapVirtualKeyA".}
+
 when useWinUnicode:
   proc findWindow*(lpClassName, lpWindowName: WinString): Handle
     {.stdcall, dynlib: "user32", importc: "FindWindowW".}
+
+  #proc mapVirtualKey*(uCode, uMapType: uint32): uint32
+  #  {.stdcall, dynlib: "user32", importc: "MapVirtualKeyW".}
