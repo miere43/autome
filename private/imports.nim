@@ -43,13 +43,13 @@ else:
   type WinString* = cstring
 
 proc newWinString*(str: string): WinString =
-  when useWinUnicode:
-    if str == nil:
-      result = nil
-    else:
-      result = newWideCString(str)
+  if str == nil:
+    result = nil
   else:
-    result = cstring(str)
+    when useWinUnicode:
+      result = newWideCString(str)
+    else:
+      result = cstring(str)
 
 ## Retrieves the position of the mouse cursor, in screen coordinates.
 proc getCursorPos*(lpPoint: ptr POINT): WINBOOL 
@@ -74,9 +74,20 @@ proc setForegroundWindow*(hWnd: Handle): WINBOOL
 proc mapVirtualKey*(uCode, uMapType: uint32): uint32
   {.stdcall, dynlib: "user32", importc: "MapVirtualKeyA".}
 
+proc wEnumWindows*(
+    lpEnumFunc: proc(hwnd: Handle, lParam: pointer): WINBOOL {.stdcall.},
+    lParam: pointer): WINBOOL
+  {.stdcall, dynlib: "user32", importc: "EnumWindows".}
+
+proc getWindowText*(hWnd: Handle, lpString: pointer, nMaxCount: int): int
+  {.stdcall, dynlib: "user32", importc: "GetWindowTextA".}
+
 when useWinUnicode:
   proc findWindow*(lpClassName, lpWindowName: WinString): Handle
     {.stdcall, dynlib: "user32", importc: "FindWindowW".}
-
+  #proc WideCharToMultiByte()
+else:
+  proc findWindow*(lpClassName, lpWindowName: WinString): Handle
+    {.stdcall, dynlib: "user32", importc: "FindWindowA".}
   #proc mapVirtualKey*(uCode, uMapType: uint32): uint32
   #  {.stdcall, dynlib: "user32", importc: "MapVirtualKeyW".}

@@ -20,19 +20,12 @@ include private.mouse
 include private.keyboard
 
 when isMainModule:
-  wait 1000
-  keyboard
-    .send("abcd", 10)
-  # const fileMenuX = 24
-  # const fileMenuY = 35
-  # const exportMenuX = 92
-  # const exportMenuY = 237
-  # const exportPosterMenuX = 232
-  # const exportPosterMenuY = 257
-  # const outputFileTextboxX = 768
-  # const outputFileTextboxY = 433
-  # const exportPosterButtonX = 1075
-  # const exportPosterButtonY = 600
+  #wait 1000
+  echo findWindow("Steam")
+  #echo "err ", getLastError()
+  #echo newWinString(str)
+  #var h = findWindow("Notepad", nil)#WindowRef(handle: 0x002f0b84)
+  #echo repr h
   # wait 2500
   # mouse
   #   .move(24, 35)
@@ -52,14 +45,14 @@ when isMainModule:
   #   .emit(mLeft, msDown, msDown, msDown, msUp)
   #   .wait(500)
   # keyboard
-  #   .emit("1")
+  #   .send("D:/image.tga", 1234)
   # mouse
   #   .wait(500)
   #   .move(1075, 600)
   #   .wait(500)
   #   .click()
   #   .wait(500)
-  #wait(1000)
+  # wait(1000)
   when defined(test):
     import private.imports
     assert sizeof(MOUSEINPUT) == 28
