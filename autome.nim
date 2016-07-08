@@ -21,7 +21,19 @@ include private.keyboard
 
 when isMainModule:
   #wait 1000
-  echo findWindow("Steam")
+  #echo eW()
+  # var wp = WINDOWPLACEMENT()
+  # wp.length = sizeof(WINDOWPLACEMENT).uint32
+  # echo getWindowPlacement(wnd, wp.addr)
+  # echo "flags: ", wp.flags
+  # echo "showcmd: ", wp.showCmd
+  # echo "minimized: ", wnd.minimized
+  # echo "maximized: ", wnd.maximized
+  # wnd.show()
+  var wnd = findWindow("azzaza")
+  echo wnd.size()
+  echo wnd.clientsize()
+  #findWindow("Steam").resize(123, 321).move(500, 500)
   #echo "err ", getLastError()
   #echo newWinString(str)
   #var h = findWindow("Notepad", nil)#WindowRef(handle: 0x002f0b84)

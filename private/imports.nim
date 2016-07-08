@@ -4,6 +4,8 @@ type
   Point* {.pure, final.} = tuple
     x: int32
     y: int32
+  RECT* {.pure, final.} = tuple
+    left, top, right, bottom: int32
   MOUSEINPUT* {.pure, final.} = object
     kind*: DWORD
     dx*: LONG
@@ -19,6 +21,13 @@ type
     dwFlags*: DWORD
     time*: DWORD
     dwExtraInfo*: pointer
+  WINDOWPLACEMENT* {.pure, final.} = object
+    length*: uint32
+    flags*: uint32
+    showCmd*: uint32
+    ptMinPosition*: Point
+    ptMaxPosition*: Point
+    rcNormalPosition*: RECT
 
 const
   inputStructSize* = 28
@@ -36,6 +45,10 @@ const
   VK_BACK* = 0x08.int16
   KEYEVENTF_KEYUP* = 0x0002
   KEYEVENTF_UNICODE* = 0x0004
+  SWP_NOSIZE* = 0x0001.uint32
+  SWP_NOMOVE* = 0x0002.uint32
+  #SW_SHOWNORMAL* = 1.uint32
+  SW_RESTORE* = 9.uint32
 
 when useWinUnicode:
   type WinString* = WideCString
@@ -81,6 +94,36 @@ proc wEnumWindows*(
 
 proc getWindowText*(hWnd: Handle, lpString: pointer, nMaxCount: int): int
   {.stdcall, dynlib: "user32", importc: "GetWindowTextA".}
+
+proc getWindowRect*(hWnd: Handle, lpRect: ptr RECT): WINBOOL
+  {.stdcall, dynlib: "user32", importc: "GetWindowRect".}
+
+proc getClientRect*(hWnd: Handle, lpRect: ptr RECT): WINBOOL
+  {.stdcall, dynlib: "user32", importc: "GetClientRect".}
+
+proc isIconic*(hWnd: Handle): WINBOOL
+  {.stdcall, dynlib: "user32", importc: "IsIconic".}
+  ## Determines whether the specified window is minimized (iconic).
+
+proc showWindow*(hWnd: Handle, nCmdShow: int): WINBOOL
+  {.stdcall, dynlib: "user32", importc: "ShowWindow".}
+
+proc isZoomed*(hWnd: Handle): WINBOOL
+  {.stdcall, dynlib: "user32", importc: "IsZoomed".}
+  ## not zoomed => 0, zoomed => != 0
+
+proc setWindowPos*(hWnd, hWndInsertAfter: Handle, x, y, cx, cy: int,
+    flags: uint32): WINBOOL
+  {.stdcall, dynlib: "user32", importc: "SetWindowPos".}
+
+proc wSetForegroundWindow*(hWnd: Handle): WINBOOL
+  {.stdcall, dynlib: "user32", importc: "SetForegroundWindow".}
+
+proc getWindowPlacement*(hWnd: Handle, lpwndpl: ptr WINDOWPLACEMENT): WINBOOL
+  {.stdcall, dynlib: "user32", importc: "GetWindowPlacement".}
+
+proc setWindowPlacement*(hWnd: Handle, lpwndpl: ptr WINDOWPLACEMENT): WINBOOL
+  {.stdcall, dynlib: "user32", importc: "SetWindowPlacement".}
 
 when useWinUnicode:
   proc findWindow*(lpClassName, lpWindowName: WinString): Handle
