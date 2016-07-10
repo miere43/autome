@@ -4,22 +4,20 @@ Simple GUI automation tool.
 ```nim
 import autome
 
-wait(1500)
-
 var wnd = findWindow("Some app")
-wnd.bringToFront()
-
+wnd
+  .attach() # attach this thread to window thread
+  .show() # bring window to front
 mouse
-  # select textbox
-  .move(400, 400)
+  .move(400, 400) # select textbox
   .click()
   # press on text box three times so its text got selected
   .emit(mLeft, msDown, msDown, msDown, msUp)
 keyboard
-  # replace text
-  .send("D:/pic.tga")
+  .send("D:/pic.tga") # replace text
 mouse
-  # click submit button
-  .move(600, 600)
+  .move(600, 600) # click submit button
   .click()
+wnd
+  .detach() # detach this thread from window thread
 ```

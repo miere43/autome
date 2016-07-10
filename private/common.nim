@@ -1,7 +1,4 @@
 proc getOSErrorMsg(): string =
-  ## Retrieves the operating system's error flag, ``errno``.
-  ## On Windows ``GetLastError`` is checked before ``errno``.
-  ## Returns "" if no error occurred.
   result = ""
   var err = getLastError()
   if err != 0'i32:

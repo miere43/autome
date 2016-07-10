@@ -1,10 +1,11 @@
 type
-  MouseButton = enum
+  MouseButton* = enum ## represents mouse button
     mLeft, mRight, mMiddle
-  MouseState = enum
+  MouseState* = enum ## represents mouse button click state: pressed or released
     msDown, msUp
 
 proc pos*(m: MouseCtx): Point =
+  ## returns current position of the cursor.
   discard getCursorPos(result.addr)
 
 proc initMouseInput(x, y: LONG, dwFlags: DWORD,
@@ -48,9 +49,11 @@ proc click*(m: MouseCtx, button: MouseButton, x, y: int32): MouseCtx
   m
 
 proc click*(m: MouseCtx, x, y: int32): MouseCtx {.inline, discardable.} =
+  ## emulates mouse press with left mouse button at position `x`, `y`.
   result = click(m, mLeft, x, y)
 
 proc click*(m: MouseCtx): MouseCtx {.inline, discardable.} =
+  ## enumates mouse press with left mouse button at current mouse position.
   var (x, y) = m.pos()
   result = click(m, mLeft, x, y)
 
@@ -70,10 +73,10 @@ proc doubleclick*(m: MouseCtx): MouseCtx {.inline, discardable.} =
 
 proc emit*(m: MouseCtx, button: MouseButton,
     events: varargs[MouseState]): MouseCtx {.discardable.} =
-  # emit mouse press/release events at current mouse position. Max 100 events.
+  ## emits mouse press/release events at current mouse position.
   var (x, y) = m.pos()
   var inputsLen = len(events)
-  var inputs = cast[array[0..100, MOUSEINPUT]]
+  var inputs = cast[array[0..9999, MOUSEINPUT]]
     (alloc(sizeof(MOUSEINPUT) * inputsLen))
   var i = 0
   for event in events:
@@ -86,10 +89,12 @@ proc emit*(m: MouseCtx, button: MouseButton,
   m
 
 proc move*(m: MouseCtx, x, y: int): MouseCtx {.discardable.} =
+  ## sets mouse position to `x` and `y`.
   discard setCursorPos(x, y)
   m
 
 proc movedelta*(m: MouseCtx, dx, dy: int): MouseCtx {.discardable.} =
+  ## moves mouse by `dx` and `dy` pixels.
   var inputs: array[1, MOUSEINPUT]
   inputs[0] = initMouseInput(dx.DWORD, dy.DWORD, mouseButtonToDownFlags(mLeft))
   let res = sendInput(len(inputs).uint, inputs[0].addr, sizeof(MOUSEINPUT))
@@ -97,27 +102,33 @@ proc movedelta*(m: MouseCtx, dx, dy: int): MouseCtx {.discardable.} =
   m
 
 proc x*(m: MouseCtx): int {.inline.} =
+  ## returns mouse `x` position.
   var p: POINT
   discard getCursorPos(p.addr)
   p.x
 
 proc y*(m: MouseCtx): int {.inline.} =
+  ## returns mouse `y` position.
   var p: POINT
   discard getCursorPos(p.addr)
   p.y
 
 proc x*(m: MouseCtx, pos: int): MouseCtx {.inline, sideEffect, discardable.} =
+  ## sets mouse `x` position.
   discard setCursorPos(pos, m.y)
   m
 
 proc y*(m: MouseCtx, pos: int): MouseCtx {.inline, sideEffect, discardable.} =
+  ## sets mouse `y` position.
   discard setCursorPos(m.x, pos)
   m
 
 proc `x=`*(m: MouseCtx, pos: int) {.inline, sideEffect.} =
+  ## sets mouse `x` position.
   m.x(pos)
 
 proc `y=`*(m: MouseCtx, pos: int) {.inline, sideEffect.} =
+  ## sets mouse `y` position.
   m.y(pos)
 
 proc wait*(m: MouseCtx, ms: int): MouseCtx {.inline, sideEffect, discardable.} =
