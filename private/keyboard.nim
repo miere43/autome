@@ -25,10 +25,9 @@ proc emit*(kb: KeyboardCtx, keys: string): KeyboardCtx {.discardable.} =
   assert res == keysLen.uint
   kb
 
-proc send*(kb: KeyboardCtx, keys: string, waitms: int): KeyboardCtx
+proc send*(kb: KeyboardCtx, keys: string): KeyboardCtx
     {.discardable.} =
   var input = initKeykbInput(0, 0.int16, 0.DWORD)
-  var release = false
   for key in keys:
     input.wScan = key.int16
     echo input.wScan

@@ -1,8 +1,4 @@
-template raiseGenericOSError(cond: expr, msg: string): stmt =
-  if cond:
-    raise newException(OSError, msg)
-
-proc getErrorMsg(): string =
+proc getOSErrorMsg(): string =
   ## Retrieves the operating system's error flag, ``errno``.
   ## On Windows ``GetLastError`` is checked before ``errno``.
   ## Returns "" if no error occurred.
@@ -22,10 +18,14 @@ proc getErrorMsg(): string =
         result = $msgbuf
         if msgbuf != nil: localFree(msgbuf)
 
-template raiseErrorIf(cond: expr): stmt =
-  if cond:
-    raise newException(OSError, getErrorMsg())
+# template raiseErrorIf(cond: expr): stmt =
+#   if cond:
+#     raise newException(OSError, getOSErrorMsg())
 
+# template raiseGenericOSError(cond: expr, msg: string): stmt =
+#   if cond:
+#     raise newException(OSError, msg)
+    
 proc wait*(ms: int): void {.inline, sideEffect.} =
   ## suspends the execution of current thread
   ## until the time-out interval elapses. Time is in milliseconds.

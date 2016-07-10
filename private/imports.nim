@@ -47,6 +47,7 @@ const
   KEYEVENTF_UNICODE* = 0x0004
   SWP_NOSIZE* = 0x0001.uint32
   SWP_NOMOVE* = 0x0002.uint32
+  SWP_NOACTIVATE* = 0x0010.uint32
   #SW_SHOWNORMAL* = 1.uint32
   SW_RESTORE* = 9.uint32
 
@@ -92,6 +93,18 @@ proc wEnumWindows*(
     lParam: pointer): WINBOOL
   {.stdcall, dynlib: "user32", importc: "EnumWindows".}
 
+proc getWindowThreadProcessId*(hWnd: Handle, lpdwProcessId: ptr DWORD): DWORD 
+  {.stdcall, dynlib: "user32", importc: "GetWindowThreadProcessId".}
+
+proc getCurrentThreadId*(): DWORD
+  {.stdcall, dynlib: "kernel32", importc: "GetCurrentThreadId".}
+
+proc attachThreadInput*(idAttach, idAttachTo: DWORD, fAttach: WINBOOL): WINBOOL
+  {.stdcall, dynlib: "user32", importc: "AttachThreadInput".}
+
+proc setFocus*(hWnd: Handle): Handle 
+  {.stdcall, dynlib: "user32", importc: "SetFocus".}
+
 proc getWindowText*(hWnd: Handle, lpString: pointer, nMaxCount: int): int
   {.stdcall, dynlib: "user32", importc: "GetWindowTextA".}
 
@@ -124,6 +137,9 @@ proc getWindowPlacement*(hWnd: Handle, lpwndpl: ptr WINDOWPLACEMENT): WINBOOL
 
 proc setWindowPlacement*(hWnd: Handle, lpwndpl: ptr WINDOWPLACEMENT): WINBOOL
   {.stdcall, dynlib: "user32", importc: "SetWindowPlacement".}
+
+proc windowFromPoint*(Point: Point): Handle
+  {.stdcall, dynlib: "user32", importc: "WindowFromPoint".}
 
 when useWinUnicode:
   proc findWindow*(lpClassName, lpWindowName: WinString): Handle
