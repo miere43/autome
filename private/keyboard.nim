@@ -26,8 +26,11 @@ proc initKeykbInput(wVk, wScan: int16, dwFlags: DWORD): KEYBDINPUT {.inline.} =
 #   kb
 
 proc send*(kb: KeyboardCtx, keys: string): KeyboardCtx
-    {.discardable.} =
-  ## enumates character keypresses with characters in `keys` string.
+    {.sideEffect, discardable.} =
+  ## emulates character key presses with characters in `keys` string.
+  ## Make sure you have right keyboard layout set up, because this proc
+  ## does not send actual characters, but underlying ASCII key-code
+  ## associated with characters.
   var input = initKeykbInput(0, 0.int16, 0.DWORD)
   for key in keys:
     input.wScan = key.int16

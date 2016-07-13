@@ -1,10 +1,11 @@
 import winlean, dynlib
 
 type
-  Point* {.pure, final.} = tuple
+  Window* = Handle ## represents window handle.
+  Point* {.pure, final.} = tuple 
     x: int32
     y: int32
-  RECT* {.pure, final.} = tuple
+  RECT* {.pure, final.} = tuple 
     left, top, right, bottom: int32
   MOUSEINPUT* {.pure, final.} = object
     kind*: DWORD
@@ -28,7 +29,13 @@ type
     ptMinPosition*: Point
     ptMaxPosition*: Point
     rcNormalPosition*: RECT
-
+  MSG* {.pure, final.} = object
+    hwnd*: Handle
+    message*: uint32
+    wParam*: uint
+    lParam*: int
+    time*: int32
+    pt*: Point
 const
   inputStructSize* = 28
   INPUT_MOUSE* = 0
@@ -50,6 +57,10 @@ const
   SWP_NOACTIVATE* = 0x0010.uint32
   #SW_SHOWNORMAL* = 1.uint32
   SW_RESTORE* = 9.uint32
+  WM_HOTKEY* = 0x0312
+  WM_INPUT* = 0x00FF
+  QS_INPUT* = 0x0001 or 0x0002 or 0x0004 or 0x0400
+  PM_QS_INPUT* = QS_INPUT shl 16
 
 when useWinUnicode:
   type WinString* = WideCString
@@ -140,6 +151,21 @@ proc setWindowPlacement*(hWnd: Handle, lpwndpl: ptr WINDOWPLACEMENT): WINBOOL
 
 proc windowFromPoint*(Point: Point): Handle
   {.stdcall, dynlib: "user32", importc: "WindowFromPoint".}
+
+proc registerHotKey*(hWnd: Handle, id: int, fsModifiers: uint32,
+    vk: uint32): WINBOOL
+  {.stdcall, dynlib: "user32", importc: "RegisterHotKey".}
+
+proc unregisterHotKey*(hWnd: Handle, id: int): WINBOOL
+  {.stdcall, dynlib: "user32", importc: "UnregisterHotKey".}
+
+proc getMessage*(lpMsg: ptr MSG, hWnd: Handle, wMsgFilterMin,
+    wMsgFilterMax: uint32): WINBOOL
+  {.stdcall, dynlib: "user32", importc: "GetMessageA".}
+
+proc peekMessage*(lpMsg: ptr MSG, hWnd: Handle, wMsgFilterMin,
+    wMsgFilterMax: uint32, wRemoveMsg: uint32): WINBOOL
+  {.stdcall, dynlib: "user32", importc: "PeekMessageA".}
 
 when useWinUnicode:
   proc findWindow*(lpClassName, lpWindowName: WinString): Handle

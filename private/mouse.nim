@@ -4,12 +4,8 @@ type
   MouseState* = enum ## represents mouse button click state: pressed or released
     msDown, msUp
 
-proc pos*(m: MouseCtx): Point =
-  ## returns current position of the cursor.
-  discard getCursorPos(result.addr)
-
 proc initMouseInput(x, y: LONG, dwFlags: DWORD,
-    mouseData: DWORD = 0.DWORD): MOUSEINPUT {.inline, sideEffect.} =
+    mouseData: DWORD = 0.DWORD): MOUSEINPUT {.inline.} =
   MOUSEINPUT(
     kind: INPUT_MOUSE,
     dx: x,
@@ -18,6 +14,10 @@ proc initMouseInput(x, y: LONG, dwFlags: DWORD,
     dwFlags: dwFlags,
     time: 0.DWORD,
     dwExtraInfo: getMessageExtraInfo())
+
+proc pos*(m: MouseCtx): Point =
+  ## returns current position of the cursor.
+  discard getCursorPos(result.addr)
 
 proc mouseButtonToDownFlags(b: MouseButton): DWORD {.inline, gcsafe.} =
   result = case b
@@ -37,7 +37,7 @@ proc mouseButtonToFlags(b: MouseButton, s: MouseState): DWORD {.gcsafe.} =
     of msUp: mouseButtonToUpFlags(b)
 
 proc click*(m: MouseCtx, button: MouseButton, x, y: int32): MouseCtx
-    {.discardable.} =
+    {.sideEffect, discardable.} =
   ## emulates mouse press and release event.
   var inputs: array[2, MOUSEINPUT]
   inputs[0] = initMouseInput(x, y,
@@ -48,16 +48,16 @@ proc click*(m: MouseCtx, button: MouseButton, x, y: int32): MouseCtx
   assert res == len(inputs).uint
   m
 
-proc click*(m: MouseCtx, x, y: int32): MouseCtx {.inline, discardable.} =
+proc click*(m: MouseCtx, x, y: int32): MouseCtx {.sideEffect, discardable.} =
   ## emulates mouse press with left mouse button at position `x`, `y`.
   result = click(m, mLeft, x, y)
 
-proc click*(m: MouseCtx): MouseCtx {.inline, discardable.} =
+proc click*(m: MouseCtx): MouseCtx {.sideEffect, discardable.} =
   ## enumates mouse press with left mouse button at current mouse position.
   var (x, y) = m.pos()
   result = click(m, mLeft, x, y)
 
-proc doubleclick*(m: MouseCtx): MouseCtx {.inline, discardable.} =
+proc doubleclick*(m: MouseCtx): MouseCtx {.sideEffect, discardable.} =
   ## emulates double mouse press and one release event.
   var (x, y) = m.pos()
   var inputs: array[4, MOUSEINPUT]
@@ -72,8 +72,11 @@ proc doubleclick*(m: MouseCtx): MouseCtx {.inline, discardable.} =
   m
 
 proc emit*(m: MouseCtx, button: MouseButton,
-    events: varargs[MouseState]): MouseCtx {.discardable.} =
+    events: varargs[MouseState]): MouseCtx {.sideEffect, discardable.} =
   ## emits mouse press/release events at current mouse position.
+  ##
+  ## .. code-block:: nim
+  ##   mouse.emit(mLeft, msDown, msDown, msDown, msUp) # emulate tripleclick
   var (x, y) = m.pos()
   var inputsLen = len(events)
   var inputs = cast[array[0..9999, MOUSEINPUT]]
@@ -88,13 +91,15 @@ proc emit*(m: MouseCtx, button: MouseButton,
   assert res == inputsLen.uint
   m
 
-proc move*(m: MouseCtx, x, y: int): MouseCtx {.discardable.} =
+proc move*(m: MouseCtx, x, y: int): MouseCtx {.sideEffect, discardable.} =
   ## sets mouse position to `x` and `y`.
   discard setCursorPos(x, y)
   m
 
-proc movedelta*(m: MouseCtx, dx, dy: int): MouseCtx {.discardable.} =
-  ## moves mouse by `dx` and `dy` pixels.
+proc movedelta*(m: MouseCtx, dx, dy: int): MouseCtx {.sideEffect,discardable.} =
+  ## moves mouse by `dx` and `dy` pixels. This proc may be useful to interface
+  ## with window menu bar items, which are not receiving "hover" event when
+  ## using `move proc<#move,MouseCtx,int,int>`_.
   var inputs: array[1, MOUSEINPUT]
   inputs[0] = initMouseInput(dx.DWORD, dy.DWORD, mouseButtonToDownFlags(mLeft))
   let res = sendInput(len(inputs).uint, inputs[0].addr, sizeof(MOUSEINPUT))

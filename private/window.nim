@@ -8,7 +8,7 @@ proc maximized*(h: Handle): bool =
   ## determines whether a window is maximized.
   return isZoomed(h) != 0
 
-proc restore*(h: Handle): Handle {.discardable.} =
+proc restore*(h: Handle): Handle {.sideEffect, discardable.} =
   ## restores window from minimized or maximized state or both. As result window
   ## is getting ## unminimized and unmaximized, its previous position before
   ## minimization or maximization gets restored. If window is not
@@ -24,13 +24,13 @@ proc restore*(h: Handle): Handle {.discardable.} =
   echo setWindowPlacement(h, wp.addr)
   h
 
-proc unminimize*(h: Handle): Handle {.inline, discardable.} =
+proc unminimize*(h: Handle): Handle {.inline, sideEffect, discardable.} =
   ## unminimizes window if it is minimized. Does nothing otherwise.
   if minimized(h):
     restore(h)
   h
 
-proc unmaximize*(h: Handle): Handle {.inline, discardable.} =
+proc unmaximize*(h: Handle): Handle {.inline, sideEffect, discardable.} =
   ## unmaximizes window if it is maximized. Does nothing otherwise.
   if maximized(h):
     restore(h)
@@ -90,6 +90,7 @@ proc pos*(h: Handle): Point =
 
 proc size*(h: Handle): tuple[w: int32, h: int32] =
   ## returns width and height of the window including window borders.
+  ## ``May report wrong values.``
   var wp = WINDOWPLACEMENT(length: sizeof(WINDOWPLACEMENT).uint32)
   discard getWindowPlacement(h, wp.addr)
   return (w: wp.rcNormalPosition.right - wp.rcNormalPosition.left,
@@ -97,19 +98,20 @@ proc size*(h: Handle): tuple[w: int32, h: int32] =
 
 proc clientsize*(h: Handle): tuple[w: int32, h: int32] =
   ## returns width and height of the window ``without window border`` aka
-  ## actual window size. If window is minimized, ``OSError`` is raised.
+  ## actual window size.
+  ## ``May report wrong values.``
   #if minimized(h):
   #  raise newException(OSError, "window is minimized")
   var rect: RECT
   discard getClientRect(h, rect.addr)
   return (w: rect.right - rect.left, h: rect.bottom - rect.top)
 
-proc move*(handle: Handle, x, y: int): Handle {.discardable.} =
+proc move*(handle: Handle, x, y: int): Handle {.sideEffect, discardable.} =
   ## moves window to new position.
   discard setWindowPos(handle, 0.Handle, x, y, 0, 0, SWP_NOSIZE)
   handle
 
-proc resize*(handle: Handle, w, h: int): Handle {.discardable.} =
+proc resize*(handle: Handle, w, h: int): Handle {.sideEffect, discardable.} =
   ## resizes window.
   #if minimized(h):
   #  raise newException(OSError, "window is minimized")
@@ -127,12 +129,12 @@ template attachBase(h: Handle, attach: WINBOOL): Handle =
       getOSErrorMsg())
   h
 
-proc attach*(h: Handle): Handle {.discardable.} =
+proc attach*(h: Handle): Handle {.sideEffect, discardable.} =
   ## attaches current thread to window thread so ``show()`` and ``foreground()``
   ## procs can be used with window.
   attachBase(h, 1.WINBOOL)
 
-proc detach*(h: Handle): Handle {.discardable.} =
+proc detach*(h: Handle): Handle {.sideEffect, discardable.} =
   ## detaches current thread from window.
   attachBase(h, 0.WINBOOL)
 
@@ -142,7 +144,7 @@ proc detach*(h: Handle): Handle {.discardable.} =
 #   if 0 == wSetForegroundWindow(h):
 #     raise newException(OSError, "cannot bring window to foreground")
 
-proc tofront*(h: Handle): Handle {.discardable.} =
+proc tofront*(h: Handle): Handle {.sideEffect, discardable.} =
   ## places the window at the top of Z-order.
   const HWND_TOP = 0.Handle
   if 0 == setWindowPos(h, HWND_TOP, 0, 0, 0, 0, SWP_NOMOVE or SWP_NOSIZE or
@@ -150,14 +152,14 @@ proc tofront*(h: Handle): Handle {.discardable.} =
     raise newException(OSError, "unable to move window to front")
   h
 
-proc focus*(h: Handle): Handle {.discardable.} =
+proc focus*(h: Handle): Handle {.sideEffect, discardable.} =
   ## gains focus to the window.
   if setFocus(h) == 0:
     raise newException(OSError, "unable to set focus, did you " &
       "forgot to call `attach()`?: " & getOSErrorMsg())
   h
 
-proc show*(h: Handle): Handle {.discardable.} =
+proc show*(h: Handle): Handle {.sideEffect, discardable.} =
   ## unminimizes window if it is not in normal state, brings it to
   ## front and focuses on it, basically, window is now on top above all other
   ## windows,`` howerer, it may be covered by topmost windows.``
@@ -166,7 +168,7 @@ proc show*(h: Handle): Handle {.discardable.} =
   tofront(h)
   h
 
-proc tobottom*(h: Handle): Handle {.discardable.} =
+proc tobottom*(h: Handle): Handle {.sideEffect, discardable.} =
   ## places the window at the bottom of Z-order. ``Window will lose it's
   ## topmost status.``
   const HWND_BOTTOM = 1.Handle
@@ -175,7 +177,8 @@ proc tobottom*(h: Handle): Handle {.discardable.} =
     raise newException(OSError, "unable to move window to bottom")
   h
 
-proc topmost*(h: Handle, topmost: bool = true): Handle {.discardable.} =
+proc topmost*(h: Handle, topmost: bool = true): Handle
+    {.sideEffect, discardable.} =
   ## enables or disables topmost status of the window. When topmost status
   ## disabled, window will be placed on top of Z-order before topmost windows.
   const
