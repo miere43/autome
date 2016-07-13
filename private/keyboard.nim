@@ -29,7 +29,7 @@ proc send*(kb: KeyboardCtx, keys: string): KeyboardCtx
     {.sideEffect, discardable.} =
   ## emulates character key presses with characters in `keys` string.
   ## Make sure you have right keyboard layout set up, because this proc
-  ## does not send actual characters, but underlying ASCII key-code
+  ## does not send actual characters, but underlying ASCII key codes
   ## associated with characters.
   var input = initKeykbInput(0, 0.int16, 0.DWORD)
   for key in keys:
