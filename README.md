@@ -9,6 +9,7 @@ Simple GUI automation tool.
 
 ### Documentation
 Docs are not always up-to-date, but still: http://miere.ru/docs/autome/
+
 You can also generate docs yourself with `$ nim doc2 autome`.
 
 ### Example

@@ -31,15 +31,27 @@
 ## you are smart enough and you are passing ``nil`` for `ctx` argument
 ## of mouse/keyboard procs (͡° ͜ʖ ͡°).
 
-import private.imports, winlean
+{.deadCodeElim: on.}
+
+import winlean
 
 type
-  KeyboardCtx* = ref object
-    none: byte
-  MouseCtx* = ref object
-    none: byte
-  WindowRef* = ref object
-    handle*: Handle
+  KeyboardCtx* = ref object ## represents keyboard context.
+  MouseCtx* = ref object ## represents mouse context.
+  Window* = distinct Handle ## represents window handle.
+  Point* {.pure, final.} = tuple ## represents point on the screen.
+    x: int32
+    y: int32
+  KeyboardModifier* {.size: sizeof(uint32).} = enum ## represents various
+  ## keyboard modifiers.
+    modAlt = 0, modControl = 1, modShift = 2, modNoRepeat = 14
+  KeyboardModifiers* = set[KeyboardModifier] ## represents set of 
+  ## keyboard modifiers that can be combined.
+  Hotkey* = distinct int ## represents hotkey registered with
+  ## `registerHotkey<#registerHotkey>`_ proc.
+
+proc `==`*(a, b: Window): bool {.borrow.}
+  ## proc to enable comparison of two windows.
 
 let
   mouse* = MouseCtx() ## default mouse context. You can use it like that:
@@ -55,6 +67,7 @@ let
   ##   keyboard
   ##     .send("hello")
 
+include private.imports
 include private.common
 include private.window
 include private.mouse
@@ -62,4 +75,7 @@ include private.keyboard
 include private.hotkey
 
 when isMainModule:
+  #var g = registerHotkey(0x43.uint32, {modAlt, modControl})
+  waitForHotkey(66666.Hotkey)
+  #echo "k"
   assert sizeof(MOUSEINPUT) == 28
