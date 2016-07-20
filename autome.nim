@@ -76,6 +76,7 @@ include private.keyboard
 include private.hotkey
 
 when isMainModule:
+  #assert(findWindow("Sublime") != 0.Window)
   #var g = registerHotkey(0x43.uint32, {modAlt, modControl})
   #waitForHotkey(66666.Hotkey)
   #echo "k"

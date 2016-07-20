@@ -10,7 +10,6 @@ macro mouseAction(s: expr): expr =
   expectKind(s, nnkProcDef) # allow only procs
 
   var formalParams = findChild(s, it.kind == nnkFormalParams)
-
   var mouseCtxArgName: NimNode = nil
 
   for identDef in formalParams:
