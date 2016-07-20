@@ -16,7 +16,7 @@ proc registerHotkey*(key: uint32, mods: KeyboardModifiers = {}): Hotkey
   ## system by any another application, this proc will raise ``OSError``.
   ##
   ## .. code-block:: nim
-  ##   let hk = registerHotkey(0x42, modShift) # 0x42 - virtual-key code of `b`
+  ##   let hk = registerHotkey(0x42, {modShift}) # 0x42 - virtual-key of `b`
   ##   waitForHotkey(hk)
   ##   echo "hotkey SHIFT+b invoked"
   ##
@@ -30,9 +30,7 @@ proc registerHotkey*(key: uint32, mods: KeyboardModifiers = {}): Hotkey
 proc unregisterHotkey*(hotkey: Hotkey) {.sideEffect.} =
   ## unregisters hotkey that was registered using
   ## `registerHotkey<#registerHotkey>`_ proc.
-  if 0 == unregisterHotKey(0.Window, hotkey):
-    raise newException(OSError, "unable to unregister hotkey: " &
-      getOSErrorMsg())
+  discard unregisterHotKey(0.Window, hotkey)
 
 proc waitForHotkey*(hotkey: Hotkey) {.sideEffect.} =
   ## blocks current thread until `hotkey` is invoked. Using hotkey, unregistered

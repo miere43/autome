@@ -146,6 +146,8 @@ proc unregisterHotKey(hWnd: Window, id: Hotkey): WINBOOL
 proc getMessage(lpMsg: ptr MSG, hWnd: Window, wMsgFilterMin,
     wMsgFilterMax: uint32): WINBOOL {.importc: "GetMessageA".}
 
+proc isWindow(hWnd: Window): WINBOOL
+  {.importc: "IsWindow".}
 # proc peekMessage(lpMsg: ptr MSG, hWnd: Window, wMsgFilterMin,
 #     wMsgFilterMax: uint32, wRemoveMsg: uint32): WINBOOL
 #   {.importc: "PeekMessageA".}

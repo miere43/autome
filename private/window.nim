@@ -55,11 +55,44 @@ proc findWindowEnumProc(hwnd: Window, lParam: pointer): WINBOOL {.stdcall.} =
   return 1
 
 proc findWindow*(search: string): Window =
-  ## returns first window which contains following string.
+  ## returns first window which contains following string. Returns ``0.Window``
+  ## if not found.
   var res: tuple[findstr: string, hwndPtr: ptr Window] =
     (findstr: search, hwndPtr: result.addr)
   discard wEnumWindows(findWindowEnumProc, res.addr)
   #imports.findWindow(newWinString(title), newWinString(class))
+
+proc waitForWindow*(search: string, timeout: int,
+    pollDelay: int32 = 100): Window {.sideEffect.} =
+  ## blocks current thread until window containing string ``search`` has been
+  ## found or until ``timeout`` (milliseconds) elapses, polling for window each
+  ## ``pollDelay` milliseconds. Returns ``0.Window`` if ``timeout`` has elapsed
+  ## and no window was found. Use ``high(int32)`` for ``timeout`` argument to
+  ## have timeout of ~25 days.
+  # todo test with timeout = 0 and timeout < 0
+  var timeleft = timeout
+  while timeleft >= 0:
+    result = findWindow(search)
+    if result == 0.Window:
+      timeleft = timeleft - pollDelay
+      sleep(pollDelay)
+    else:
+      break
+
+proc waitForWindowDestroy*(window: Window, timeout: int,
+    pollDelay: int32 = 100): bool {.sideEffect.} =
+  ## blocks current thread until ``window`` was destroyed. This proc may
+  ## not catch destroy event because window handles are recycled and thus
+  ## old window handle may point to the new window handle. Returns ``true``
+  ## when window has been destroyed and ``false`` when ``timeout`` elapsed.
+  var timeleft = timeout
+  while timeleft >= 0:
+    if isWindow(window) != 0:
+      timeleft = timeleft - pollDelay
+      sleep(pollDelay)
+    else:
+      return true
+  return false
 
 proc windowAt*(pos: Point): Window =
   ## returns window at pixel `pos`. If there are no window at `pos`, ``OSError``

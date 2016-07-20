@@ -23,7 +23,7 @@ proc getOSErrorMsg(): string =
 #   if cond:
 #     raise newException(OSError, msg)
     
-proc wait*(ms: int): void {.inline, sideEffect.} =
+proc wait*(ms: int32): void {.inline, sideEffect.} =
   ## suspends the execution of current thread
   ## until the time-out interval elapses. Time is in milliseconds.
   sleep(ms.DWORD)

@@ -38,6 +38,7 @@ import winlean
 type
   KeyboardCtx* = ref object ## represents keyboard context.
   MouseCtx* = ref object ## represents mouse context.
+    perActionWaitTime: int32
   Window* = distinct Handle ## represents window handle.
   Point* {.pure, final.} = tuple ## represents point on the screen.
     x: int32
@@ -76,6 +77,6 @@ include private.hotkey
 
 when isMainModule:
   #var g = registerHotkey(0x43.uint32, {modAlt, modControl})
-  waitForHotkey(66666.Hotkey)
+  #waitForHotkey(66666.Hotkey)
   #echo "k"
   assert sizeof(MOUSEINPUT) == 28

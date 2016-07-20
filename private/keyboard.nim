@@ -34,10 +34,16 @@ proc send*(kb: KeyboardCtx, keys: string): KeyboardCtx
   var input = initKeykbInput(0, 0.int16, 0.DWORD)
   for key in keys:
     input.wScan = key.int16
-    echo input.wScan
+    # echo input.wScan
     input.dwFlags = KEYEVENTF_UNICODE
     discard sendInput(1, input.addr, inputStructSize)
     input.dwFlags = KEYEVENTF_UNICODE or KEYEVENTF_KEYUP
     discard sendInput(1, input.addr, inputStructSize)
     #wait(100)
+  kb
+
+proc wait*(kb: KeyboardCtx, ms: int32): KeyboardCtx
+    {.sideEffect, discardable.} =
+  ## stops execution for ``ms`` milliseconds.
+  wait(ms)
   kb
