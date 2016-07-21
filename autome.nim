@@ -24,12 +24,7 @@
 ##     .move(123, 321)
 ##
 ## There are methods that are not bound to specific context, but accept
-## them to not break proc chaining (for example, ``wait`` proc).
-##
-## Currently context variables are used only for nice chaining syntax and
-## do not contain any useful data, but this may change in future, so beware if
-## you are smart enough and you are passing ``nil`` for `ctx` argument
-## of mouse/keyboard procs (͡° ͜ʖ ͡°).
+## them to not break proc chaining (`wait<#wait>`_ proc for example).
 
 {.deadCodeElim: on.}
 
@@ -54,6 +49,13 @@ type
 proc `==`*(a, b: Window): bool {.borrow.}
   ## proc to enable comparison of two windows.
 
+proc `==`*(a, b: Hotkey): bool {.borrow.}
+  ## proc to enable comparison of two hotkey handles.
+
+proc `!=`*(a, b: Hotkey): bool =
+  return not (a == b)
+  ## proc to enable comparisson of two hotkey handles.
+
 let
   mouse* = MouseCtx() ## default mouse context. You can use it like that:
   ##
@@ -77,7 +79,8 @@ include private.hotkey
 
 when isMainModule:
   #assert(findWindow("Sublime") != 0.Window)
-  #var g = registerHotkey(0x43.uint32, {modAlt, modControl})
-  #waitForHotkey(66666.Hotkey)
+  #var b = registerHotkey(0x42.uint32, {modControl}) # ctrl + b
+  var c = registerHotkey(0x43.uint32, {modControl}) # ctrl + c
+  echo waitForHotkey(c, 2000)
   #echo "k"
   assert sizeof(MOUSEINPUT) == 28

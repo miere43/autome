@@ -32,18 +32,35 @@ proc unregisterHotkey*(hotkey: Hotkey) {.sideEffect.} =
   ## `registerHotkey<#registerHotkey>`_ proc.
   discard unregisterHotKey(0.Window, hotkey)
 
-proc waitForHotkey*(hotkey: Hotkey) {.sideEffect.} =
-  ## blocks current thread until `hotkey` is invoked. Using hotkey, unregistered
-  ## with `unregisterHotkey<#unregisterHotkey>`_ proc will lock thread forever.
-  # TODO: waitForHotkey with timeout.
+proc waitForHotkeys*(hotkeys: openArray[Hotkey],
+    timeout: uint32 = 0): Hotkey {.sideEffect.} =
+  ## blocks current thread until any hotkey in ``openArray[Hotkey]`` invoked.
+  ## If ``timeout`` is more than 0, then this proc will return after hotkey
+  ## invoked or until ``timeout`` in milliseconds has elapsed. This proc returns
+  ## handle of hotkey that was invoked or ``Hotkey(-1)`` if ``timeout`` elapsed.
   var msg: MSG
   var status: WINBOOL
+  var timer: uint32
+  if timeout != 0:
+    timer = setTimer(0.Window, 0, timeout, nil)
   while true:
-    status = getMessage(msg.addr, 0.Window, WM_HOTKEY, WM_HOTKEY)
+    status = getMessage(msg.addr, 0.Window, WM_TIMER, WM_HOTKEY)
     if status == -1:
       raise newException(OSError, "error while waiting for hotkey: " &
         getOSErrorMsg())
-    if status == 0:
+    if status == 0 or msg.message == WM_TIMER and msg.wParam == timer:
+      result = Hotkey(-1)
       break
-    if msg.message == WM_HOTKEY and msg.wParam == hotkey.uint32:
+    if msg.message == WM_HOTKEY and msg.wParam.int.Hotkey in hotkeys:
+      result = msg.wParam.int.Hotkey
       break
+  if timeout != 0 and result.int > 0:
+    discard killTimer(0.Window, uint(timer))
+
+proc waitForHotkey*(hotkey: Hotkey, timeout: uint32 = 0): bool
+    {.sideEffect, discardable.} =
+  ## blocks current thread until `hotkey` is invoked. If ``timeout`` is 0, then
+  ## this proc has no timeout. If ``timeout`` has elapsed, ``false`` returned,
+  ##``true`` otherwise. Note that registering Ctrl+C hotkey will shadow console
+  ## Ctrl+C interrupt.
+  return waitForHotkeys([hotkey], timeout) != Hotkey(-1)

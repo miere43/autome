@@ -50,6 +50,7 @@ const
   SWP_NOACTIVATE = 0x0010.uint32
   #SW_SHOWNORMAL = 1.uint32
   SW_RESTORE = 9.uint32
+  WM_TIMER = 0x0113
   WM_HOTKEY = 0x0312
 
 when useWinUnicode:
@@ -146,10 +147,15 @@ proc unregisterHotKey(hWnd: Window, id: Hotkey): WINBOOL
 proc getMessage(lpMsg: ptr MSG, hWnd: Window, wMsgFilterMin,
     wMsgFilterMax: uint32): WINBOOL {.importc: "GetMessageA".}
 
-proc isWindow(hWnd: Window): WINBOOL
-  {.importc: "IsWindow".}
+proc isWindow(hWnd: Window): WINBOOL {.importc: "IsWindow".}
 # proc peekMessage(lpMsg: ptr MSG, hWnd: Window, wMsgFilterMin,
 #     wMsgFilterMax: uint32, wRemoveMsg: uint32): WINBOOL
 #   {.importc: "PeekMessageA".}
+
+proc setTimer(hWnd: Window, nIDEvent: uint, uElapse: uint32,
+    lpTimerFunc: pointer): uint32 {.importc: "SetTimer".}
+
+proc killTimer(hWnd: Window, uIDEvent: uint): WINBOOL
+  {.importc: "KillTimer".}
 
 {.pop.} # 1
