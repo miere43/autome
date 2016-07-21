@@ -35,7 +35,6 @@ mouse
 ```
 
 ### TODO
-* wait for hotkey with timeout proc
 * close window proc
 * clean up stuff that was leaved after refactoring
 * check out why window.size & window.clientsize procs' report wrong values
