@@ -76,11 +76,9 @@ include private.window
 include private.mouse
 include private.keyboard
 include private.hotkey
+include private.notify
 
 when isMainModule:
-  #assert(findWindow("Sublime") != 0.Window)
-  #var b = registerHotkey(0x42.uint32, {modControl}) # ctrl + b
-  var c = registerHotkey(0x43.uint32, {modControl}) # ctrl + c
-  echo waitForHotkey(c, 2000)
-  #echo "k"
+  import strutils
+  echo sizeof(NOTIFYICONDATAA) == 508
   assert sizeof(MOUSEINPUT) == 28

@@ -32,6 +32,22 @@ type
     lParam: int
     time: int32
     pt: Point
+  NOTIFYICONDATAA {.pure, final.} = object
+    cbSize: DWORD
+    hWnd: Window
+    uID: uint32
+    uFlags: uint32
+    uCallbackMessage: uint32
+    hIcon: int # HICON = sizeof(IntPtr)
+    szTip: array[128, char] #array[64, WinChar] 
+    dwState: DWORD
+    dwStateMask: DWORD
+    szInfo: array[256, char] #array[256, WinChar]
+    uVersion: uint32
+    szInfoTitle: array[64, char] #array[64, WinChar]
+    dwInfoFlags: DWORD
+    guidItem: array[16, byte]
+    hBalloonIcon: int # HICON = sizeof(IntPtr)
 const
   inputStructSize = 28
   INPUT_MOUSE = 0
@@ -52,6 +68,16 @@ const
   SW_RESTORE = 9.uint32
   WM_TIMER = 0x0113
   WM_HOTKEY = 0x0312
+  NIM_ADD = 0.DWORD
+  NIM_MODIFY = 1.DWORD
+  NIM_DELETE = 2.DWORD
+  NIM_SETVERSION = 4.DWORD
+  NIF_INFO = 0x0000_0010.uint32
+  NIF_TIP = 4.uint32
+  NIF_SHOWTIP = 0x00000080.uint32
+  HORZRES = 8.int
+  VERTRES = 10.int
+  #COLOR_WINDOW = 5.Handle
 
 when useWinUnicode:
   type WinString = WideCString ## ``cstring`` when ``useWinAnsi`` defined,
@@ -78,7 +104,6 @@ else:
 proc sleep(dwMilliseconds: DWORD): void {.importc: "Sleep".}
 
 proc getCurrentThreadId(): DWORD {.importc: "GetCurrentThreadId".}
-
 
 when not defined(automestatic):
   {.pop.} # 2
@@ -144,7 +169,7 @@ proc registerHotKey(hWnd: Window, id: Hotkey, fsModifiers: KeyboardModifiers,
 proc unregisterHotKey(hWnd: Window, id: Hotkey): WINBOOL
   {.importc: "UnregisterHotKey".}
 
-proc getMessage(lpMsg: ptr MSG, hWnd: Window, wMsgFilterMin,
+proc getMessageA(lpMsg: ptr MSG, hWnd: Window, wMsgFilterMin,
     wMsgFilterMax: uint32): WINBOOL {.importc: "GetMessageA".}
 
 proc isWindow(hWnd: Window): WINBOOL {.importc: "IsWindow".}
@@ -158,4 +183,15 @@ proc setTimer(hWnd: Window, nIDEvent: uint, uElapse: uint32,
 proc killTimer(hWnd: Window, uIDEvent: uint): WINBOOL
   {.importc: "KillTimer".}
 
+proc getDC(hWnd: Window): Handle {.importc: "GetDC".}
+
 {.pop.} # 1
+
+proc shellNotifyIconA(dwMessage: DWORD, lpdata: ptr NOTIFYICONDATAA): WINBOOL
+  {.stdcall, dynlib: "shell32", importc: "Shell_NotifyIconA".}
+
+proc getPixel(hdc: Handle, nXPos, nYPos: int): DWORD
+  {.stdcall, dynlib: "gdi32", importc: "GetPixel".}
+
+proc getDeviceCaps(hdc: Handle, nIndex: int): int 
+  {.stdcall, dynlib: "gdi32", importc: "GetDeviceCaps".}

@@ -44,7 +44,7 @@ proc waitForHotkeys*(hotkeys: openArray[Hotkey],
   if timeout != 0:
     timer = setTimer(0.Window, 0, timeout, nil)
   while true:
-    status = getMessage(msg.addr, 0.Window, WM_TIMER, WM_HOTKEY)
+    status = getMessageA(msg.addr, 0.Window, WM_TIMER, WM_HOTKEY)
     if status == -1:
       raise newException(OSError, "error while waiting for hotkey: " &
         getOSErrorMsg())
