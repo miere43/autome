@@ -1,5 +1,5 @@
 # autome
-Simple GUI automation tool.
+Simple GUI automation tool (Windows only).
 
 ### Features
 * mouse: get/set cursor pos, emit clicks
